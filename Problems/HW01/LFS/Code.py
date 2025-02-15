@@ -157,9 +157,7 @@ plt.show()
 
 #%%
 
-# 3 - Employment in Three Sectors by Firm Size
-
-
+d['isic_join']= d['F3_D10'].str[:4]
 
 
 

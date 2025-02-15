@@ -65,4 +65,6 @@ a= a.merge(level1, on= 'Main')
 a= a[a['Level3'].notna()]
 a= a.drop('Main', axis= 1)
 
+a= a.rename({'Code': 'ISICCode'}, axis= 1)
+
 a.to_excel('ISICRev4.xlsx', index= False)
