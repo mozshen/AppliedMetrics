@@ -157,8 +157,13 @@ plt.show()
 
 #%%
 
-d['isic_join']= d['F3_D10'].str[:4]
+d['ISICCode']= d['F3_D10'].str[:1]
 
+isic= pd.read_excel('ISICRev4.xlsx')
+isic['ISICCode']= isic['ISICCode'].str[:1]
+isic= isic[['ISICCode', 'Level1']].drop_duplicates()
+
+a= set(d['ISICCode'].unique())- set(isic['ISICCode'])
 
 
 

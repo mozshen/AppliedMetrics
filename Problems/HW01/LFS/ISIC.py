@@ -61,10 +61,19 @@ level1= a[a['Code'].str.len()== 1]
 level1= level1[['Main', 'Level4']]
 level1.columns= ['Main', 'Level1']
 
+level1['Level0']= 'Services'
+level1['Level0']= np.where(level1['Main']<= 'G', 'Industry', level1['Level0'])
+level1['Level0']= np.where(level1['Main']== 'A', 'Agriculture', level1['Level0'])
+
+#%%
+
 a= a.merge(level1, on= 'Main')
-a= a[a['Level3'].notna()]
 a= a.drop('Main', axis= 1)
 
 a= a.rename({'Code': 'ISICCode'}, axis= 1)
 
+#%%
+
 a.to_excel('ISICRev4.xlsx', index= False)
+
+#%%
