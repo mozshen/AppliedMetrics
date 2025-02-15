@@ -1,4 +1,5 @@
 
+
 #%%
 
 import lfsir
@@ -35,8 +36,6 @@ d_cleaned= lfsir.load_table(
 #%%
 
 # 1 - Labor Force Participation and Unemployment Rates
-
-#%%
 
 # editing gender
 d['F2_D04']= d['F2_D04'].map({1: 'Male', 2: 'Female'})
@@ -157,15 +156,45 @@ plt.show()
 
 #%%
 
-d['ISICCode']= d['F3_D10'].str[:1]
+# 3 - Employment in Three Sectors by Firm Size
+d['ISICCode']= d['F3_D10'].str[:2]
 
 isic= pd.read_excel('ISICRev4.xlsx')
-isic['ISICCode']= isic['ISICCode'].str[:1]
-isic= isic[['ISICCode', 'Level1']].drop_duplicates()
+isic['ISICCode']= isic['ISICCode'].str[:2]
+isic= isic[['ISICCode', 'Level0']].drop_duplicates()
 
-a= set(d['ISICCode'].unique())- set(isic['ISICCode'])
+d= d.merge(isic, on= 'ISICCode', how= 'left')
 
+#%%
 
+# firm size
+d['F3_D12'] = pd.to_numeric(d['F3_D12'], errors='coerce')
+d= d.rename({'F3_D12': 'FirmSize'}, axis= 1)
 
+#%%
 
+d_q= d.groupby(['Level0', 'FirmSize'], as_index= False).agg({'Employed': 'sum'})
 
+d_q['FirmSize']= d_q['FirmSize'].map({
+    1: '01 to 04',
+    2: '05 to 09',
+    3: '10 to 19',
+    4: '20 to 49',
+    5: 'Over 50'
+    })
+
+d_q= d_q.pivot(index="FirmSize", columns="Level0", values="Employed")
+
+#%%
+
+d_q.plot(kind="bar", figsize=(10, 6), colormap="viridis", edgecolor="black", alpha=0.9)
+
+plt.title("Employed Individuals by Firm Size", fontsize=14, fontweight="bold")
+plt.xlabel("Firm Size", fontsize=12)
+plt.ylabel("Number of Employees, Million", fontsize=12)
+plt.legend(title="Sector", frameon=False)
+plt.grid(axis="y", linestyle="--", alpha=0.5)
+plt.xticks(rotation= 0)
+plt.show()
+
+#%%
