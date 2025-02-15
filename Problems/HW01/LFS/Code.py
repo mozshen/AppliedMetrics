@@ -32,6 +32,22 @@ d_cleaned= lfsir.load_table(
 #%%
 
 
+# 1 - Labor Force Participation and Unemployment Rates
+# we define labour force partitcipation those between 15 and 65 year
+# who are currently working or try to find work
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
