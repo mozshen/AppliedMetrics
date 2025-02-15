@@ -198,3 +198,76 @@ plt.xticks(rotation= 0)
 plt.show()
 
 #%%
+
+# 4 - Hours Worked by Insured and Uninsured Workers
+
+# insurance flag
+d['F3_D13']= d['F3_D13'].map({
+    '1': 'Insured',
+    '2': 'Uninsured'
+    })
+
+d= d.rename({'F3_D13': 'IsInsured'}, axis= 1)
+
+#%%
+
+# we consider only the main job working hours
+d['F3_D16SHASLIS'] = pd.to_numeric(d['F3_D16SHASLIS'], errors='coerce')
+d= d.rename({'F3_D16SHASLIS': 'HoursWorkedinMainJob'}, axis= 1)
+
+#%%
+
+# adding isic
+d['ISICCode']= d['F3_D10'].str[:2]
+
+isic= pd.read_excel('ISICRev4.xlsx')
+isic['ISICCode']= isic['ISICCode'].str[:2]
+isic= isic[['ISICCode', 'Level1']].drop_duplicates()
+
+d= d.merge(isic, on= 'ISICCode', how= 'left')
+
+#%%
+
+# average hours in occupations
+d_q = d.groupby(['Level1', 'IsInsured'], as_index=False).agg(
+    HoursWorkedinMainJob=(
+        'HoursWorkedinMainJob', 
+        lambda x: np.average(x, weights=d.loc[x.index, 'IW_Yearly'])
+    )
+)
+
+d_q= d_q.pivot(index="Level1", columns="IsInsured", values="HoursWorkedinMainJob")
+d_q= d_q.reset_index()
+
+d_q.to_excel('Q4-avghourinsuranceoccupation.xlsx', index= False)
+
+#%%
+
+# checking for difference in avg hours
+d_q = d.groupby(['Level1']).agg(
+    HoursWorkedinMainJob=(
+        'HoursWorkedinMainJob', 
+        lambda x: np.average(x, weights=d.loc[x.index, 'IW_Yearly'])
+    )
+)
+
+#%%
+
+d_q= d_q.sort_values('HoursWorkedinMainJob')
+d_q.plot(kind="barh", figsize=(10, 6), colormap="viridis", edgecolor="black", alpha=0.9)
+
+plt.title("Average Working Hours in Occupations", fontsize=14, fontweight="bold")
+plt.xlabel("Average Working Hours", fontsize=12)
+plt.show()
+
+
+#%%
+
+
+
+
+
+
+
+
+
