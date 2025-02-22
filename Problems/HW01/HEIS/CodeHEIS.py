@@ -4,6 +4,9 @@
 import pandas as pd
 from statsmodels.stats.weightstats import DescrStatsW
 import numpy as np
+import hbsir
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 #%%
 
@@ -140,4 +143,72 @@ d['Decile'] = weighted_deciles(d['GHazineh'].values, d['weight'].values)
 # we assume that the column GHazineh has all the income
 
 #%%
+
+# 7 - Histogram of Average Educational Expenditure by Expenditure Deciles
+
+# we get raw data
+hbsir.setup(
+    years= 1401,
+    method="create_from_raw",
+    download_source="mirror",
+    replace=False,
+)
+
+d_raw= hbsir.load_table("durable", 1401)
+
+# filtering for education related costs
+# education
+a1= d_raw[d_raw['Commodity_Code'].astype(str).str[:3].isin(['101', '102', '103', '104', '105'])]
+# education books
+a2= d_raw[d_raw['Commodity_Code'].astype(str).str[:5].isin(['95111', '95112', '95113', '95114', '95115'])]
+
+d_educ= pd.concat([a1, a2])
+del a1, a2
+
+#%%
+
+# now we get total education expend
+d_educ= d_educ[d_educ['Provision_Method']== 'Purchase']
+d_educ= d_educ.groupby('ID', as_index= False).agg({'Expenditure': 'sum'})
+d_educ.columns= ['ADDRESS', 'EducationExpenditure']
+
+#%%
+
+# now we merge both
+d= d.merge(d_educ, on= 'ADDRESS', how= 'left')
+d['EducationExpenditure']= d['EducationExpenditure'].fillna(0)
+
+#%%
+
+# now we get mean by decile
+d_q = d.groupby(['Decile'], as_index=False).agg(
+    Education_mean=('EducationExpenditure', lambda x: weighted_mean(x, d.loc[x.index, 'weight'])),
+)
+
+#%%
+
+# Set style
+sns.set_style("whitegrid")
+
+# Create figure
+plt.figure(figsize=(8, 5))
+
+# Bar plot
+sns.barplot(x=d_q['Decile'], y=d_q['Education_mean'], color='#4C72B0', edgecolor='black')
+
+# Labels and title
+plt.xlabel("Decile", fontsize=12, labelpad=10)
+plt.ylabel("Average Education Expenduture", fontsize=12, labelpad=10)
+plt.title("Education Level by Decile", fontsize=14, pad=15)
+
+# Remove top and right spines for a clean look
+sns.despine()
+
+# Show plot
+plt.show()
+
+#%%
+
+
+
 
