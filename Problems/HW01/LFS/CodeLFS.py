@@ -6,6 +6,21 @@ import lfsir
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from statsmodels.stats.weightstats import DescrStatsW
+from scipy.stats import ttest_ind_from_stats
+
+#%%
+
+def weighted_mean(series, weights):
+    return np.average(series, weights=weights) if not series.isna().all() else np.nan
+
+def weighted_std(series, weights):
+    if len(series) > 1:
+        return DescrStatsW(series, weights=weights).std
+    return np.nan
+
+def effective_sample_size(weights):
+    return (weights.sum() ** 2) / (weights**2).sum()
 
 
 #%%
@@ -244,12 +259,28 @@ d_q.to_excel('Q4-avghourinsuranceoccupation.xlsx', index= False)
 #%%
 
 # checking for difference in avg hours
-d_q = d.groupby(['Level1']).agg(
-    HoursWorkedinMainJob=(
-        'HoursWorkedinMainJob', 
-        lambda x: np.average(x, weights=d.loc[x.index, 'IW_Yearly'])
-    )
+d_q = d.groupby(['Level1'], as_index=False).agg(
+    hour_mean=('HoursWorkedinMainJob', lambda x: weighted_mean(x, d.loc[x.index, 'IW_Yearly'])),
+    hour_std=('HoursWorkedinMainJob', lambda x: weighted_std(x, d.loc[x.index, 'IW_Yearly'])),
+    hour_n_eff=('IW_Yearly', lambda w: effective_sample_size(w))
 )
+
+#%%
+
+# t test
+row_A = d_q[d_q['Level1'] == 'Education'].iloc[0]
+row_B = d_q[d_q['Level1'] == 'Mining and quarrying'].iloc[0]
+
+# Extract values
+mean_A, std_A, n_A = row_A['hour_mean'], row_A['hour_std'], row_A['hour_n_eff']
+mean_B, std_B, n_B = row_B['hour_mean'], row_B['hour_std'], row_B['hour_n_eff']
+
+# Perform t-test
+t_stat, p_value = ttest_ind_from_stats(mean_A, std_A, n_A, mean_B, std_B, n_B, equal_var=False)
+
+print(f"T-statistic: {t_stat}, P-value: {p_value}")
+
+# so the values are different!
 
 #%%
 
