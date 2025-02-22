@@ -17,6 +17,28 @@ def weighted_std(series, weights):
 
 #%%
 
+def weighted_deciles(values, weights, num_groups=10):
+    """Assigns weighted decile ranks (1 to 10) based on GHazineh values."""
+    sorted_indices = np.argsort(values)
+    sorted_weights = weights[sorted_indices]
+
+    # Compute cumulative sum of weights
+    cumulative_weights = np.cumsum(sorted_weights)
+    total_weight = cumulative_weights[-1]
+
+    # Compute decile thresholds
+    thresholds = np.linspace(0, total_weight, num_groups + 1)
+
+    # Assign decile groups
+    deciles = np.searchsorted(cumulative_weights, thresholds[1:], side='right') + 1
+    ranks = np.zeros_like(values)
+    for i in range(num_groups):
+        ranks[sorted_indices[deciles[i - 1] if i > 0 else 0 : deciles[i]]] = i + 1
+
+    return ranks
+
+#%%
+
 d1= pd.read_excel('SumR1401.xlsx')
 d1['Type']= 'Rural'
 d2= pd.read_excel('SumU1401.xlsx')
@@ -110,16 +132,12 @@ d_q.to_excel('Q5-part2.xlsx')
 #%%
 
 # 6 - Expenditure Deciles for Each Household
+# we create deciles based on withtax income. because tax data may be distorted.
+d['Decile'] = weighted_deciles(d['GHazineh'].values, d['weight'].values)
 
-
-
-
-
-
-
-
-
-
+# since it is said the we use summary data for getting decile
+# and summary data doesnt have food and non-food expenditures
+# we assume that the column GHazineh has all the income
 
 #%%
 
