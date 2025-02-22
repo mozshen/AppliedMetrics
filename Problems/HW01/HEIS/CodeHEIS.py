@@ -209,6 +209,68 @@ plt.show()
 
 #%%
 
+# 8 - Educational Expenditure per Child by Household Expenditure Decile
+# first we want to know how many child members are educating
+d_member= hbsir.load_table("members_properties", 1401)
+
+d_member= d_member[d_member['Is_Student']== True]
+d_member= d_member[d_member['Relationship']== 'Child']
+d_member= d_member.groupby('ID', as_index= False).agg({'Relationship': 'count'})
+d_member.columns= ['ADDRESS', 'StudentChildCount']
+
+# merging
+d= d.merge(d_member, on= 'ADDRESS', how= 'left')
+d['StudentChildCount']= d['StudentChildCount'].fillna(0)
+
+#%%
+
+# we also need to know the total member count
+d_member= hbsir.load_table("members_properties", 1401)
+d_member= d_member.groupby('ID', as_index= False).agg({'Relationship': 'count'})
+d_member.columns= ['ADDRESS', 'MemberCount']
+
+d= d.merge(d_member, on= 'ADDRESS', how= 'left')
+d['MemberCount']= d['MemberCount'].fillna(0)
+
+#%%
+
+# Assumptions of the calculation:
+#  we assume expenditures are equaly distributed metween members
+# so we get expend by student child with this formula: ((d['StudentChildCount']/ d['MemberCount'])* d['GHazineh'])
+# and then divide the education expenditure to this value
+
+d['EducationExpenditureperChildShare']= d['EducationExpenditure'] / ((d['StudentChildCount']/ d['MemberCount'])* d['GHazineh'])
+d_q= d[d['EducationExpenditureperChildShare']<1]
+
+d_q = d_q.groupby(['Decile'], as_index=False).agg(
+    Education_mean=('EducationExpenditureperChildShare', lambda x: weighted_mean(x, d.loc[x.index, 'weight'])),
+)
+
+#%%
+
+# Set style
+sns.set_style("whitegrid")
+
+# Create figure
+plt.figure(figsize=(8, 5))
+
+# Bar plot
+sns.barplot(x=d_q['Decile'], y=d_q['Education_mean']* 100, color='#4C72B0', edgecolor='black')
+
+# Labels and title
+plt.xlabel("Decile", fontsize=12, labelpad=10)
+plt.ylabel("Share of per Child Education Expenditure, %", fontsize=12, labelpad=10)
+plt.title("Share of per Child Education Expenditure by Decile", fontsize=14, pad=15)
+
+# Remove top and right spines for a clean look
+sns.despine()
+
+# Show plot
+plt.show()
+
+#%%
+
+
 
 
 
