@@ -64,3 +64,64 @@ plt.show()
 
 
 #%%
+
+# c. OLS regression
+# Define the independent variables: 
+d_X = d[['atndrte', 'frosh', 'soph', 'priGPA', 'ACT']]
+d_X = sm.add_constant(d_X)
+
+# Define the dependent variable
+d_Y = d['stndfnl']
+
+# Run the OLS regression
+model = sm.OLS(d_Y, d_X).fit()
+
+# Print the regression results
+print(model.summary())
+
+#%%
+
+# h. add quadritic forms
+d_X = d[['atndrte', 'frosh', 'soph', 'priGPA', 'ACT']]
+d_X[['priGPA2', 'ACT2']]= d_X[['priGPA', 'ACT']]**2
+
+d_X = sm.add_constant(d_X)
+
+# Define the dependent variable
+d_Y = d['stndfnl']
+
+# Run the OLS regression
+model = sm.OLS(d_Y, d_X).fit()
+
+# Print the regression results
+print(model.summary())
+
+#%%
+# check jointly significance
+joint_test = model.f_test("priGPA2 = ACT2 = 0")
+print(joint_test)
+
+#%%
+
+# i. adding nonlinear effect
+d_X = d[['atndrte', 'frosh', 'soph', 'priGPA', 'ACT']]
+d_X[['priGPA2', 'ACT2']]= d_X[['priGPA', 'ACT']]**2
+d_X[['atndrte2']]= d_X[['atndrte']]**2
+
+d_X = sm.add_constant(d_X)
+
+# Define the dependent variable
+d_Y = d['stndfnl']
+
+# Run the OLS regression
+model = sm.OLS(d_Y, d_X).fit()
+
+# Print the regression results
+print(model.summary())
+
+#%%
+
+
+
+
+
