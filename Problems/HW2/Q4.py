@@ -63,3 +63,12 @@ plt.title('Estimated Sample Regression Function')
 plt.show()
 
 #%%
+
+
+
+
+
+
+
+
+
