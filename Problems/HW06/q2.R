@@ -77,4 +77,3 @@ original_cs <- constructOriginalCS(
 
 createSensitivityPlot_relativeMagnitudes(sensitivity, original_cs)
 
-
