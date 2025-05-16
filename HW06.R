@@ -11,6 +11,7 @@ library(fixest)
 library(bacondecomp)
 setwd("E:/For Git/AppliedMetrics/Problems/HW06")
 
+# part 1
 #%% reading data
 
 d <- read_dta("ehec_data.dta")
@@ -266,8 +267,6 @@ ols_result2 <- feols(
   cluster = ~stfips
 )
 
-
-
 event_study_df <- data.frame(
   event_time = dynamic_att2$egt,
   att = dynamic_att2$att.egt,
@@ -291,6 +290,8 @@ bacon_result2 <- bacon(
   id_var = "stfips",
   time_var = "year"
 )
+
+
 
 
 
