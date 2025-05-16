@@ -21,7 +21,6 @@ d <- d %>%
 
 #%% Estimate group-time ATT using att_gt
 # Estimate the ATT(g,t) using Callaway and Sant’Anna’s
-estimator
 att_gt_result <- att_gt(
   yname = "dins",           # outcome variable
   tname = "year",           # time variable
@@ -176,6 +175,7 @@ print('TWFE:')
 ols_result[["coefficients"]][["D"]]
 ols_result[["se"]][["D"]]
 
+#%% Bacon Decomposition
 bacon_result <- bacon(
   formula = dins ~ D,
   data = d,
@@ -183,6 +183,57 @@ bacon_result <- bacon(
   time_var = "year"
 )
 
+
+#%% removing untreated
+d_treated <- d %>%
+  filter(yexp2 != 3000)
+
+att_gt_treated <- att_gt(
+  yname = "dins",
+  tname = "year",
+  idname = "stfips",
+  gname = "yexp2",
+  data = d_treated,
+  control_group = "notyettreated",
+  allow_unbalanced_panel = TRUE
+)
+
+# Aggregate to dynamic (event-time) ATT
+dynamic_att_treated <- aggte(att_gt_treated, type = "dynamic")
+summary(dynamic_att_treated)
+
+event_study_df <- data.frame(
+  event_time = dynamic_att_treated$egt,
+  att = dynamic_att_treated$att.egt,
+  se = dynamic_att_treated$se.egt
+)
+
+d_treated <- d_treated %>%
+  mutate(D = ifelse(year >= yexp2, 1, 0))
+
+ols_result_treated <- feols(
+  dins ~ D | stfips + year,
+  data = d_treated,
+  cluster = ~stfips
+)
+
+att_treat= event_study_df%>%
+  filter(event_time>0)
+
+print('From Callaway:')
+mean(att_treat$att)
+mean(att_treat$se)
+
+print('TWFE:')
+ols_result_treated[["coefficients"]][["D"]]
+ols_result_treated[["se"]][["D"]]
+
+bacon_result <- bacon(
+  formula = dins ~ D,
+  data = d_treated,
+  id_var = "stfips",
+  time_var = "year"
+)
 
 #%% Even bigger TWFE problems
 # when we have trend in value
