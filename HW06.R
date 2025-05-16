@@ -7,7 +7,8 @@ library(haven)
 library(dplyr)
 library(rlang)
 library(ggplot2)
-
+library(fixest)
+library(bacondecomp)
 setwd("E:/For Git/AppliedMetrics/Problems/HW06")
 
 #%% reading data
@@ -149,18 +150,96 @@ ggplot(event_study_df, aes(x = event_time, y = att)) +
   ) +
   theme_minimal()
 
+#%%  Compare to TWFE estimates (part 1)
+
+
+d <- d %>%
+  mutate(D = ifelse(year >= yexp2 & yexp2 != 3000, 1, 0))
+
+ols_result <- feols(
+  dins ~ D | stfips + year,     # D as regressor, fixed effects for id and year
+  data = d,
+  cluster = ~stfips         # cluster SEs at state level
+)
+
+summary(ols_result)
+
+
+att= event_study_df%>%
+  filter(event_time>0)
+
+print('From Callaway:')
+mean(att$att)
+mean(att$se)
+
+print('TWFE:')
+ols_result[["coefficients"]][["D"]]
+ols_result[["se"]][["D"]]
+
+bacon_result <- bacon(
+  formula = dins ~ D,
+  data = d,
+  id_var = "stfips",
+  time_var = "year"
+)
+
+
+#%% Even bigger TWFE problems
+# when we have trend in value
+d <- d %>%
+  mutate(
+    relativeTime = ifelse(yexp2 != 3000, year - yexp2, NA),  # only for treated
+    dins2 = ifelse(!is.na(relativeTime) & relativeTime >= 0, dins + 0.01 * relativeTime, dins)
+  )
+
+att_gt_result2 <- att_gt(
+  yname = "dins2",
+  tname = "year",
+  idname = "stfips",
+  gname = "yexp2",
+  data = d,
+  control_group = "notyettreated",
+  allow_unbalanced_panel = TRUE
+)
+
+dynamic_att2 <- aggte(att_gt_result2, type = "dynamic")
+
+# Recalculate D with same logic
+d <- d %>%
+  mutate(D = ifelse(year >= yexp2 & yexp2 != 3000, 1, 0))
+
+
+ols_result2 <- feols(
+  dins2 ~ D | stfips + year,
+  data = d,
+  cluster = ~stfips
+)
 
 
 
+event_study_df <- data.frame(
+  event_time = dynamic_att2$egt,
+  att = dynamic_att2$att.egt,
+  se = dynamic_att2$se.egt
+)
 
+att2= event_study_df%>%
+  filter(event_time>0)
 
+print('From Callaway:')
+mean(att2$att)
+mean(att2$se)
 
+print('TWFE:')
+ols_result2[["coefficients"]][["D"]]
+ols_result2[["se"]][["D"]]
 
-
-
-
-
-
+bacon_result2 <- bacon(
+  formula = dins2 ~ D,
+  data = d,
+  id_var = "stfips",
+  time_var = "year"
+)
 
 
 
