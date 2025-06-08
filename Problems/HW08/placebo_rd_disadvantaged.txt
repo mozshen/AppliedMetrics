@@ -1,0 +1,26 @@
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:     perc_disadvantaged   R-squared:                       0.017
+Model:                            OLS   Adj. R-squared:                  0.014
+Method:                 Least Squares   F-statistic:                     6.080
+Date:                Sun, 08 Jun 2025   Prob (F-statistic):            0.00241
+Time:                        14:36:49   Log-Likelihood:                -2964.3
+No. Observations:                 703   AIC:                             5935.
+Df Residuals:                     700   BIC:                             5948.
+Df Model:                           2                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept     18.9153      1.609     11.757      0.000      15.757      22.074
+treatment      2.8368      2.559      1.109      0.268      -2.187       7.861
+running       -0.2758      0.103     -2.684      0.007      -0.478      -0.074
+==============================================================================
+Omnibus:                       46.162   Durbin-Watson:                   0.977
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):               49.826
+Skew:                           0.621   Prob(JB):                     1.51e-11
+Kurtosis:                       2.602   Cond. No.                         57.5
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.

@@ -1,0 +1,23 @@
+                          IV-2SLS Estimation Summary                          
+==============================================================================
+Dep. Variable:                avgmath   R-squared:                      0.2519
+Estimator:                    IV-2SLS   Adj. R-squared:                 0.2487
+No. Observations:                 699   F-statistic:                    289.54
+Date:                Sun, Jun 08 2025   P-value (F-stat)                0.0000
+Time:                        14:24:18   Distribution:                  chi2(3)
+Cov. Estimator:                robust                                         
+                                                                              
+                                 Parameter Estimates                                  
+======================================================================================
+                    Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
+--------------------------------------------------------------------------------------
+Intercept              78.829     3.9694     19.859     0.0000      71.049      86.609
+enrollment             0.0602     0.0318     1.8928     0.0584     -0.0021      0.1226
+perc_disadvantaged    -0.3535     0.0214    -16.541     0.0000     -0.3954     -0.3116
+classize              -0.3776     0.1660    -2.2750     0.0229     -0.7029     -0.0523
+======================================================================================
+
+Endogenous: classize
+Instruments: above_41
+Robust Covariance (Heteroskedastic)
+Debiased: False
